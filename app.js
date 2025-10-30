@@ -36,7 +36,8 @@ app.set('view engine', 'hbs');
 
 // Load Airbnb data
 let airbnbData = [];
-fs.readFile("airbnb_with_photos.json", "utf8", (err, data) => {
+const jsonPath = path.join(__dirname, 'airbnb_data.json');
+fs.readFile(jsonPath, "utf8", (err, data) => {
   if (!err) {
     airbnbData = JSON.parse(data);
     console.log(airbnbData[0])
