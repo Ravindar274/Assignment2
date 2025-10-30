@@ -34,13 +34,23 @@ const hbs = exphbs.create({
 app.engine(".hbs", hbs.engine);
 app.set('view engine', 'hbs');
 
-// Load Airbnb data
+const fs = require("fs").promises;
+
 let airbnbData = [];
-fs.readFile("airbnb_with_photos.json", "utf8", (err, data) => {
-  if (!err) {
+
+async function loadAirbnbData() {
+  try {
+    const data = await fs.readFile("airbnb_with_photos.json", "utf8");
     airbnbData = JSON.parse(data);
+    console.log("Airbnb data loaded successfully!");
+  } catch (err) {
+    console.error("Error reading Airbnb data:", err);
   }
-});
+}
+
+// Call the function
+loadAirbnbData();
+
 
 // Routes
 app.get('/', (req, res) => res.render('index', { title: 'Express' }));
