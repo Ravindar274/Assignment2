@@ -51,7 +51,7 @@ app.get('/users', (req, res) => res.send('respond with a resource'));
 
 app.get("/data", (req, res) => {
   console.log(airbnbData);
-  res.render('dataload', { message: airbnbData[0]['NAME'] });
+  res.render('dataload', { message: airbnbData});
 });
 
 app.get("/data/:index", (req, res) => {
