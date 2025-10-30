@@ -16,6 +16,7 @@ const port = process.env.PORT || 3000;
 // Middleware
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
+app.set('views', path.join(__dirname, 'views'));
 
 // Handlebars setup with helpers
 const hbs = exphbs.create({
@@ -77,7 +78,7 @@ app.post("/search/id",
     const item = airbnbData.find(p => String(p.id) === String(id));
 
     if (item) {
-      res.render("data", { item });
+      res.render("item", { item });
     } else {
       res.render("error", { title: "Error", message: "Property ID not found" });
     }
@@ -138,12 +139,18 @@ app.get("/viewData/price", (req, res) => res.render("priceForm", { title: "Searc
 
 app.post("/viewData/price",
   [
-    body("minPrice").notEmpty().withMessage("Min Price is required").isNumeric().withMessage("Min Price must be numeric").trim().escape(),
-    body("maxPrice").notEmpty().withMessage("Max Price is required").isNumeric().withMessage("Max Price must be numeric").trim().escape()
+    body("minPrice")
+      .notEmpty().withMessage("Min Price is required")
+      .isNumeric().withMessage("Min Price must be numeric")
+      .trim().escape(),
+    body("maxPrice")
+      .notEmpty().withMessage("Max Price is required")
+      .isNumeric().withMessage("Max Price must be numeric")
+      .trim().escape()
   ],
   (req, res) => {
-    const minPrice = parseFloat(req.query.min) || 0;
-    const maxPrice = parseFloat(req.query.max) || Number.MAX_SAFE_INTEGER;
+    const minPrice = parseFloat(req.body.minPrice) || 0;
+    const maxPrice = parseFloat(req.body.maxPrice) || Number.MAX_SAFE_INTEGER;
     const page = parseInt(req.query.page) || 1;
     const perPage = 100;
 
@@ -158,6 +165,7 @@ app.post("/viewData/price",
     res.render("viewDataPrice", { items, currentPage: page, totalPages, minPrice, maxPrice });
   }
 );
+
 
 // Catch-all route
 app.get('*', (req, res) => res.render('error', { title: 'Error', message: 'Wrong Route' }));
