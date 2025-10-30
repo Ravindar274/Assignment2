@@ -55,7 +55,7 @@ app.get('/users', (req, res) => res.send('respond with a resource'));
 
 app.get("/data", async (req, res) => {
   const airbnbData = await loadAirbnbData();
-  res.render('dataload', { message: airbnbData });
+  res.render('dataload', { message: 'data loaded successfully' });
 });
 
 app.get("/data/:index", async (req, res) => {
