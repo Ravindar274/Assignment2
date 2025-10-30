@@ -6,7 +6,7 @@
 
 const express = require('express');
 const path = require('path');
-const fs = require('fs');
+const fs = require('fs').promises;
 const exphbs = require('express-handlebars');
 const { body, validationResult } = require('express-validator');
 
@@ -34,28 +34,33 @@ const hbs = exphbs.create({
 app.engine(".hbs", hbs.engine);
 app.set('view engine', 'hbs');
 
-// Load Airbnb data
-let airbnbData = [];
+// Path to JSON file
 const jsonPath = path.join(__dirname, 'airbnb_with_photos.json');
-fs.readFile(jsonPath, "utf8", (err, data) => {
-  if (!err) {
-    airbnbData = JSON.parse(data);
-    console.log(airbnbData[0])
+
+// Async function to load Airbnb JSON data
+async function loadAirbnbData() {
+  try {
+    const rawData = await fs.readFile(jsonPath, 'utf8');
+    return JSON.parse(rawData);
+  } catch (err) {
+    console.error("Error loading Airbnb data:", err);
+    return [];
   }
-});
+}
 
 // Routes
 app.get('/', (req, res) => res.render('index', { title: 'Express' }));
 
 app.get('/users', (req, res) => res.send('respond with a resource'));
 
-app.get("/data", (req, res) => {
-  console.log(airbnbData);
-  res.render('dataload', { message: airbnbData});
+app.get("/data", async (req, res) => {
+  const airbnbData = await loadAirbnbData();
+  res.render('dataload', { message: airbnbData });
 });
 
-app.get("/data/:index", (req, res) => {
-  const idx = parseInt(req.params.index);
+app.get("/data/:index", async (req, res) => {
+  const airbnbData = await loadAirbnbData();
+  const idx = parseInt(req.params.index, 10);
   if (idx >= 0 && idx < airbnbData.length) {
     res.render("item", { item: airbnbData[idx] });
   } else {
@@ -70,12 +75,13 @@ app.post("/search/id",
   body("id").notEmpty().withMessage("Property ID is required")
             .isNumeric().withMessage("Property ID must be numeric")
             .trim().escape(),
-  (req, res) => {
+  async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.render("error", { title: "Validation Error", message: errors.array().map(e => e.msg).join(", ") });
     }
 
+    const airbnbData = await loadAirbnbData();
     const id = req.body.id;
     const item = airbnbData.find(p => String(p.id) === String(id));
 
@@ -90,13 +96,15 @@ app.post("/search/id",
 // Search by Name
 app.get("/search/name", (req, res) => res.render("searchByName", { title: "Search by Property Name" }));
 
-app.get("/searchname", (req, res) => {
+app.get("/searchname", async (req, res) => {
   const nameQuery = req.query.name ? req.query.name.toLowerCase() : "";
   if (!nameQuery) {
     return res.render("error", { title: "Validation Error", message: "Property Name is required" });
   }
 
-  const results = airbnbData.filter(p => p.NAME.toLowerCase().includes(nameQuery));
+  const airbnbData = await loadAirbnbData();
+  const results = airbnbData.filter(p => p.NAME && p.NAME.toLowerCase().includes(nameQuery));
+
   if (results.length > 0) {
     const page = parseInt(req.query.page) || 1;
     const perPage = 100;
@@ -115,21 +123,21 @@ app.get("/searchname", (req, res) => {
 });
 
 // View Data
-app.get("/viewData", (req, res) => {
+app.get("/viewData", async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const perPage = 100;
+  const airbnbData = await loadAirbnbData();
   const totalPages = Math.ceil(airbnbData.length / perPage);
   const items = airbnbData.slice((page - 1) * perPage, page * perPage);
 
   res.render("viewData", { items, currentPage: page, totalPages });
-  console.log(items)
 });
 
 // View Clean Data
-app.get("/viewData/clean", (req, res) => {
+app.get("/viewData/clean", async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const perPage = 100;
-
+  const airbnbData = await loadAirbnbData();
   const cleanItems = airbnbData.filter(item => item["service fee"] && item["service fee"].trim() !== "");
   const totalPages = Math.ceil(cleanItems.length / perPage);
   const items = cleanItems.slice((page - 1) * perPage, page * perPage);
@@ -142,33 +150,26 @@ app.get("/viewData/price", (req, res) => res.render("priceForm", { title: "Searc
 
 app.post("/viewData/price",
   [
-    body("minPrice")
-      .notEmpty().withMessage("Min Price is required")
-      .isNumeric().withMessage("Min Price must be numeric")
-      .trim().escape(),
-    body("maxPrice")
-      .notEmpty().withMessage("Max Price is required")
-      .isNumeric().withMessage("Max Price must be numeric")
-      .trim().escape()
+    body("minPrice").notEmpty().withMessage("Min Price is required").isNumeric().withMessage("Min Price must be numeric").trim().escape(),
+    body("maxPrice").notEmpty().withMessage("Max Price is required").isNumeric().withMessage("Max Price must be numeric").trim().escape()
   ],
-  (req, res) => {
+  async (req, res) => {
     const minPrice = parseFloat(req.body.minPrice) || 0;
     const maxPrice = parseFloat(req.body.maxPrice) || Number.MAX_SAFE_INTEGER;
     const page = parseInt(req.query.page) || 1;
-    const perPage = 100;
 
+    const airbnbData = await loadAirbnbData();
     const filteredItems = airbnbData.filter(item => {
       const price = parseFloat((item.price || "0").replace(/[$,]/g, "")) || 0;
       return price >= minPrice && price <= maxPrice;
     });
 
-    const totalPages = Math.ceil(filteredItems.length / perPage);
-    const items = filteredItems.slice((page - 1) * perPage, page * perPage);
+    const totalPages = Math.ceil(filteredItems.length / 100);
+    const items = filteredItems.slice((page - 1) * 100, page * 100);
 
     res.render("viewDataPrice", { items, currentPage: page, totalPages, minPrice, maxPrice });
   }
 );
-
 
 // Catch-all route
 app.get('*', (req, res) => res.render('error', { title: 'Error', message: 'Wrong Route' }));
