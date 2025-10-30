@@ -1,0 +1,53 @@
+<h1>Airbnb Listings (Price Range)</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Thumbnail</th>
+      <th>Name</th>
+      <th>Neighbourhood</th>
+      <th>Country</th>
+      <th>Room Type</th>
+      <th>Price</th>
+      <th>Service Fee</th>
+      <th>Host Name</th>
+      <th>Images</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each items}}
+      <tr class="{{highlightEmptyFee (lookup this 'service fee')}}">
+        <td>{{id}}</td>
+        <td class="image-container">
+          <img src="{{thumbnail}}" alt="Thumbnail">
+        </td>
+        <td>{{NAME}}</td>
+        <td>{{neighbourhood}}</td>
+        <td>{{country}}</td>
+        <td>{{lookup this 'room type'}}</td>
+        <td>{{price}}</td>
+        <td>{{serviceFeeValue (lookup this 'service fee')}}</td>
+        <td>{{lookup this 'host name'}}</td>
+        <td class="image-container">
+          {{#each images}}
+            <img src="{{this}}" alt="Image">
+          {{/each}}
+        </td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>
+
+<!-- Pagination Controls -->
+<div class="pagination">
+  {{#if (gt currentPage 1)}}
+    <a href="/viewData/price?page={{subtract currentPage 1}}&min={{minPrice}}&max={{maxPrice}}">&laquo; Previous</a>
+  {{/if}}
+
+  Page {{currentPage}} of {{totalPages}}
+
+  {{#if (lt currentPage totalPages)}}
+    <a href="/viewData/price?page={{add currentPage 1}}&min={{minPrice}}&max={{maxPrice}}">Next &raquo;</a>
+  {{/if}}
+</div>

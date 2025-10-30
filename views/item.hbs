@@ -1,0 +1,39 @@
+<h2>Listing ID: {{item.id}}</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Thumbnail</th>
+      <th class="property-name">Name</th>
+      <th>Neighbourhood</th>
+      <th>Country</th>
+      <th>Room Type</th>
+      <th>Host Name</th>
+      <th>Price</th>
+      <th>Service Fee</th>
+      <th>Images</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr class="{{highlightEmptyFee (lookup item 'service fee')}}">
+      <td>{{item.id}}</td>
+      <td class="image-container">
+        <img src="{{item.thumbnail}}" alt="Thumbnail">
+      </td>
+      <td class="property-name">{{item.NAME}}</td>
+      <td>{{item.neighbourhood}}</td>
+      <td>{{item.country}}</td>
+      <td>{{lookup item 'room type'}}</td>
+      <td>{{lookup item 'host name'}}</td>
+      <td>{{item.price}}</td>
+      <td>{{serviceFeeValue (lookup item 'service fee')}}</td>
+      <td class="image-container">
+        {{#each item.images}}
+          <img src="{{this}}" alt="Image" style="width:100px; margin-right:5px;">
+        {{/each}}
+      </td>
+    </tr>
+  </tbody>
+</table>

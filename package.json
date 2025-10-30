@@ -1,0 +1,17 @@
+{
+  "name": "asn2_ravindar_pudugurthi",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "4.18.2",
+    "express-handlebars": "^5.3.5",
+    "express-validator": "^7.3.0"
+  },
+  "keywords": []
+}

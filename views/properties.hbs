@@ -1,0 +1,24 @@
+<h2>List of Properties</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Thumbnail</th>
+      <th class="property-name">Name</th>
+      <th>Neighbourhood</th>
+      <th>Country</th>
+      <th>Room Type</th>
+      <th>Host name</th>
+      <th>Price</th>
+      <th>Service Fee</th>
+      <th>Images</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {{#each items}}
+      {{> itemrow this}}
+    {{/each}}
+  </tbody>
+</table>
