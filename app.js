@@ -39,6 +39,7 @@ let airbnbData = [];
 fs.readFile("airbnb_with_photos.json", "utf8", (err, data) => {
   if (!err) {
     airbnbData = JSON.parse(data);
+    console.log(airbnbData[0])
   }
 });
 
@@ -120,6 +121,7 @@ app.get("/viewData", (req, res) => {
   const items = airbnbData.slice((page - 1) * perPage, page * perPage);
 
   res.render("viewData", { items, currentPage: page, totalPages });
+  console.log(items)
 });
 
 // View Clean Data
